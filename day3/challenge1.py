@@ -16,5 +16,5 @@ counts = defaultdict(int)
 for xy in [xy for xys in claims.values() for xy in xys]:
     counts[xy] += 1
 
-overloaded = list(filter(lambda num: num > 1, counts.values()))
+overloaded = [count for count in counts.values() if count > 1]
 print(len(overloaded))
