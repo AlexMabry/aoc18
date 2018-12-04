@@ -1,14 +1,10 @@
-import operator
 import re
 from collections import defaultdict
 from dateutil import parser
 
 f = open('input.txt', 'r')
 lines = f.readlines()
-
-
-def key_with_max_value(d):
-    return max(d.items(), key=operator.itemgetter(1))[0]
+lines.sort()
 
 
 def process_lines(line):
@@ -16,22 +12,18 @@ def process_lines(line):
     return parser.parse(m['time']), m['event']
 
 
-processed = list(map(process_lines, lines))
-processed.sort()
-
 guard_naps = defaultdict(list)
-for time, event in processed:
+for time, event in map(process_lines, lines):
     if event.startswith('Guard'):
-        guard = re.match('Guard #([0-9]+).*', event)[1]
+        guard = re.match('Guard #([0-9]+)', event)[1]
     elif event == 'falls asleep':
         start = time.minute
     elif event == 'wakes up':
         end = time.minute
         guard_naps[guard].extend([x for x in range(start, end, 1)])
 
-nap_lengths = {guard: len(naps) for guard, naps in guard_naps.items()}
-sleepiest = key_with_max_value(nap_lengths)
-minute_freq = dict((minute, guard_naps[sleepiest].count(minute)) for minute in set(guard_naps[sleepiest]))
-most_minute = key_with_max_value(minute_freq)
+sleepiest = max(guard_naps.items(), key=lambda item: len(item[1]))[0]
+minute_freq = {minute: guard_naps[sleepiest].count(minute) for minute in set(guard_naps[sleepiest])}
+most_minute = max(minute_freq.items(), key=lambda item: item[1])[0]
 
 print(int(sleepiest) * int(most_minute))
