@@ -1,7 +1,3 @@
-f = open('input.txt', 'r')
-polymer = f.readline()
-
-
 def react(poly):
     unit = 0
     while unit <= len(poly) - 2:
@@ -13,4 +9,5 @@ def react(poly):
     return poly
 
 
+polymer = open('input.txt', 'r').readline()
 print(len(react(polymer)))
