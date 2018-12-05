@@ -1,3 +1,5 @@
+import string
+
 f = open('input.txt', 'r')
 polymer = f.readline()
 
@@ -13,5 +15,5 @@ def react(poly):
     return poly
 
 
-results = {c: len(react(polymer.replace(c, '').replace(c.upper(), ''))) for c in 'abcdefghijklmnopqrstuvwxyz'}
+results = {c: len(react(polymer.replace(c, '').replace(c.upper(), ''))) for c in string.ascii_lowercase}
 print(min(results.items(), key=lambda item: item[1]))
