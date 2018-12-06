@@ -2,22 +2,10 @@ def manhattan(p1, p2):
     return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
 
 
-def read_point(line):
-    return tuple([int(n) for n in line.split(", ")])
+def prange(lst, x_y):
+    return min(lst, key=lambda p: p[x_y])[x_y], max(lst, key=lambda p: p[x_y])[x_y], 1
 
 
-def prange(points, x_y, extra=0):
-    return min(points, key=lambda p: p[x_y])[x_y] - extra, max(points, key=lambda p: p[x_y])[x_y] + extra, 1
-
-
-def agg(point_list, p2):
-    return sum([manhattan(p1, p2) for p1 in point_list])
-
-
-def group_size(points, extra=0):
-    aggs = [agg(points, (x, y)) for x in range(*prange(points, 0, extra)) for y in range(*prange(points, 1, extra))]
-    return list(filter(lambda sum: sum < 10000, aggs))
-
-
-coords = list(map(read_point, open('input.txt').readlines()))
-print(len(group_size(coords)))
+pts = list(map(lambda line: tuple([int(n) for n in line.split(", ")]), open('input.txt').readlines()))
+aggs = [sum([manhattan(p1, (x, y)) for p1 in pts]) for x in range(*prange(pts, 0)) for y in range(*prange(pts, 1))]
+print(len(list(filter(lambda sum: sum < 10000, aggs))))
