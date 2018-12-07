@@ -1,11 +1,8 @@
 import re
 from collections import defaultdict
 
-lines = map(lambda l: re.match('Step ([A-Z]).*([A-Z])', l).groups(), open('input.txt', 'r').readlines())
-steps = defaultdict(set)
-for l in lines:
-    steps[l[1]].add(l[0])
-    steps[l[0]] = steps[l[0]]
+lines = list(map(lambda l: re.match('Step ([A-Z]).*([A-Z])', l).groups(), open('input.txt', 'r').readlines()))
+steps = {letter: {p[0] for p in lines if p[1] == letter} for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'}
 
 seconds = 0
 workers = [0 for r in range(5)]
