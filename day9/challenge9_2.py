@@ -1,5 +1,7 @@
 import re
+import time
 from collections import deque
+start_time = time.time()
 
 players, last_marble = re.match('([0-9]+).* ([0-9]+)', open('input.txt', 'r').read()).groups()
 
@@ -19,3 +21,4 @@ for marble in range(1, int(last_marble)*100):
     current_player = (current_player + 1) % len(score)
 
 print(max(score))
+print("--- %s seconds ---" % (time.time() - start_time))
