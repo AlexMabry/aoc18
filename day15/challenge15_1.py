@@ -11,12 +11,17 @@ class Contains(Enum):
 class Map:
     def __init__(self, lines):
         self.locations = [Location(ix, iy, char) for iy, row in enumerate(lines) for ix, char in enumerate(row.strip())]
-        self.goblins = [Unit(loc) for loc in filter(lambda l: l.occ == Contains.GOBLIN, self.locations)]
-        self.elves = [Unit(loc) for loc in filter(lambda l: l.occ == Contains.ELF, self.locations)]
+        self.units = [Unit(loc) for loc in filter(lambda l: l.occ.value == 'G' or l.occ.value == 'E', self.locations)]
 
     def __repr__(self):
-        return f'GOBLINS: {len(self.goblins)}\n' \
-               f'ELVES: {len(self.elves)}'
+        return f'GOBLINS: {len(self.goblins())}\n' \
+               f'ELVES: {len(self.elves())}'
+
+    def goblins(self):
+        return [unit for unit in self.units if unit.loc.occ == Contains.GOBLIN]
+
+    def elves(self):
+        return [unit for unit in self.units if unit.loc.occ == Contains.ELF]
 
 
 class Location:
