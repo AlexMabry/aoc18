@@ -1,7 +1,5 @@
-from collections import deque
-
 rounds = 306281
-circle = deque([3, 7])
+circle = [3, 7]
 elf1 = 0
 elf2 = 1
 
