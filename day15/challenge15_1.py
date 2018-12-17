@@ -18,7 +18,7 @@ class Puzzle:
 
     def play_game(self):
         while self.goblins() and self.elves():
-            # self.print_board()
+            self.print_board()
             order = list(sorted(self.units))
             for unit in order:
                 enemies = self.elves() if unit.type == UnitType.GOBLIN else self.goblins()
@@ -31,11 +31,11 @@ class Puzzle:
 
         return sum([unit.hp for unit in self.units]) * self.round
 
-    # def print_board(self):
-    #     print(f'ROUND {self.round}: E:{sum([unit.hp for unit in self.elves()])} G:{sum([unit.hp for unit in self.goblins()])}')
-    #     for y in range(self.size):
-    #         line = [str(self.locations[(x, y)]) if (x, y) in self.locations else '#' for x in range(self.size)]
-    #         print(''.join(line), *[unit for unit in self.units if unit.loc.loc[1] == y])
+    def print_board(self):
+        print(f'ROUND {self.round}: E:{sum([unit.hp for unit in self.elves()])} G:{sum([unit.hp for unit in self.goblins()])}')
+        for y in range(self.size):
+            line = [str(self.locations[(x, y)]) if (x, y) in self.locations else '#' for x in range(self.size)]
+            print(''.join(line), *[unit for unit in self.units if unit.loc.loc[1] == y])
 
 
 class Location:
