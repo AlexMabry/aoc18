@@ -3,95 +3,76 @@ from collections import namedtuple, deque
 
 Point = namedtuple('Point', ['x', 'y'])
 
-lines = open('input.txt', 'r').readlines()
-clay = set()
-for line in lines:
-    groups = re.match('[xy]=([0-9]+), [xy]=([0-9]+)..([0-9]+)', line).groups()
-    if line.startswith('x'):
-        clay |= set([Point(int(groups[0]), y) for y in range(int(groups[1]), int(groups[2])+1)])
-    else:
-        clay |= set([Point(x, int(groups[0])) for x in range(int(groups[1]), int(groups[2])+1)])
 
-
-min_x = min([x for (x, y) in clay])
-max_x = max([x for (x, y) in clay])
-min_y = min([y for (x, y) in clay])
-max_y = max([y for (x, y) in clay])
-
-old_water = {Point(500, min_y)}
-new_water = deque([Point(500, min_y)])
-falling_water = {Point(500, min_y)}
-top_water = set()
-
-
-def print_ground():
-    for y in range(min_y-1, max_y+2):
-        print(''.join(['#' if (x, y) in clay else ' ' if ((x, y) in falling_water or (x, y) in top_water) else '~' if (x, y) in old_water else ' ' for x in range(min_x-2, max_x+2)]))
-    print()
+def get_clay(lines):
+    blocks = set()
+    for line in lines:
+        groups = re.match('[xy]=([0-9]+), [xy]=([0-9]+)..([0-9]+)', line).groups()
+        if line.startswith('x'):
+            blocks |= set([Point(int(groups[0]), y) for y in range(int(groups[1]), int(groups[2])+1)])
+        else:
+            blocks |= set([Point(x, int(groups[0])) for x in range(int(groups[1]), int(groups[2])+1)])
+    return blocks
 
 
 def sideways(drop):
     if drop.y + 1 < max_y + 1:
         sides = [Point(drop.x - 1, drop.y), Point(drop.x + 1, drop.y)]
-        return [side for side in sides if side not in clay and side not in old_water]
+        return [side for side in sides if side not in clay and side not in all_water]
     else:
         return []
 
 
-def connected_water(drop, answer):
-    wet = [n for n in [Point(drop.x - 1, drop.y), Point(drop.x + 1, drop.y)] if n in old_water or n in falling_water]
-    for neighbor in [drip for drip in wet if drip not in answer]:
-        answer.append(neighbor)
-        connected_water(neighbor, answer)
-    return answer
+def connected_water(drop, connected):
+    wet = [n for n in [Point(drop.x - 1, drop.y), Point(drop.x + 1, drop.y)] if n in all_water or n in falling]
+    for neighbor in [drip for drip in wet if drip not in connected]:
+        connected.add(neighbor)
+        connected_water(neighbor, connected)
+
+    return connected
 
 
 def already_falling(drop):
-    wet_neighbors = []
-    connected_water(drop, wet_neighbors)
-    return [drip for drip in wet_neighbors if drip in falling_water]
+    return [drip for drip in connected_water(drop, set()) if drip in falling]
 
 
 def remove_falling():
-    global falling_water, new_water, top_water
-    new_falling = set([drop for drop in new_water if
-                          Point(drop.x, drop.y - 1) in new_water or Point(drop.x, drop.y + 1) in new_water])
+    global falling, new_water
+    falling |= set([d for d in new_water if Point(d.x, d.y - 1) in new_water or Point(d.x, d.y + 1) in new_water])
+    new_water = [d for d in new_water if d not in falling]
 
-    friends = []
-    for drop in new_falling:
-        connected_water(drop, friends)
 
-    falling_water |= new_falling
-    new_water = [drop for drop in new_water if drop not in falling_water]
-    top_water |= set(friends)
+clay = get_clay(open('input.txt', 'r').readlines())
+min_x, max_x = min([x for (x, _) in clay]), max([x for (x, _) in clay])
+min_y, max_y = min([y for (_, y) in clay]), max([y for (_, y) in clay])
 
+all_water = {Point(500, min_y)}
+new_water = deque([Point(500, min_y)])
+falling = {Point(500, min_y)}
 
 while new_water:
     point = new_water[-1]
     below = Point(point.x, point.y + 1)
-    if below.y >= max_y+1:
+    if below.y > max_y:
         remove_falling()
     else:
-        if below not in clay and below not in old_water:
-            old_water.add(below)
+        if below in all_water and already_falling(below):
+            remove_falling()
+        elif below not in clay and below not in all_water:
+            all_water.add(below)
             new_water.append(below)
-
-            below_below = Point(below.x, below.y + 1)
-            if below_below in old_water and already_falling(below_below):
-                remove_falling()
         else:
             new_drops = sideways(new_water.pop())
-
             new_water.extend(new_drops)
-            old_water |= set(new_drops)
+            all_water |= set(new_drops)
 
+top_water = set()
+for droplet in falling:
+    connected_water(droplet, top_water)
 
-last_try = list(top_water)
+still = all_water.difference(top_water).difference(falling)
 
-for drop in top_water:
-    connected_water(drop, last_try)
+for y in range(min_y, max_y+1):
+    print(''.join(['#' if (x, y) in clay else '~' if (x, y) in still else ' ' for x in range(min_x, max_x+1)]))
 
-moving_water = top_water | falling_water | set(last_try)
-
-print_ground()
-print(len(old_water.difference(moving_water)))
+print(len(still))
