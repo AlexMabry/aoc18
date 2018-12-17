@@ -2,11 +2,11 @@ from enum import Enum
 
 
 class Puzzle:
-    def __init__(self, cave):
+    def __init__(self, cave, elf_power):
         self.round = 0
         self.size = 32
         self.locations = {point: Location(point) for point in cave.keys()}
-        self.units = [Unit(self.locations[point], char) for point, char in cave.items() if char == 'G' or char == 'E']
+        self.units = [Unit(self.locations[point], char, 3 if char == 'G' else elf_power) for point, char in cave.items() if char == 'G' or char == 'E']
         for (x, y), spot in self.locations.items():
             spot.links.extend([self.locations[loc] for loc in [(x, y-1), (x, y+1), (x-1, y), (x+1, y)] if loc in cave])
 
@@ -18,7 +18,7 @@ class Puzzle:
 
     def play_game(self):
         while self.goblins() and self.elves():
-            # self.print_board()
+            self.print_board()
             order = list(sorted(self.units))
             for unit in order:
                 enemies = self.elves() if unit.type == UnitType.GOBLIN else self.goblins()
@@ -31,11 +31,11 @@ class Puzzle:
 
         return sum([unit.hp for unit in self.units]) * self.round
 
-    # def print_board(self):
-    #     print(f'ROUND {self.round}: E:{sum([unit.hp for unit in self.elves()])} G:{sum([unit.hp for unit in self.goblins()])}')
-    #     for y in range(self.size):
-    #         line = [str(self.locations[(x, y)]) if (x, y) in self.locations else '#' for x in range(self.size)]
-    #         print(''.join(line), *[unit for unit in self.units if unit.loc.loc[1] == y])
+    def print_board(self):
+        print(f'ROUND {self.round}: E:{sum([unit.hp for unit in self.elves()])} G:{sum([unit.hp for unit in self.goblins()])}')
+        for y in range(self.size):
+            line = [str(self.locations[(x, y)]) if (x, y) in self.locations else '#' for x in range(self.size)]
+            print(''.join(line), *[unit for unit in self.units if unit.loc.loc[1] == y])
 
 
 class Location:
@@ -93,12 +93,12 @@ class UnitType(Enum):
 
 
 class Unit:
-    def __init__(self, loc: Location, unit_type):
+    def __init__(self, loc: Location, unit_type, power):
         self.loc = loc
         self.loc.occupy(self)
         self.type = UnitType(unit_type)
         self.hp = 200
-        self.power = 3
+        self.power = power
 
     def __repr__(self):
         return f'{self.type.value}({self.hp})'
@@ -157,6 +157,12 @@ class Unit:
 
 lines = open('input.txt', 'r').readlines()
 cavern = {(ix, iy): char for iy, row in enumerate(lines) for ix, char in enumerate(row.strip()) if char != '#'}
-puzzle = Puzzle(cavern)
 
-print(puzzle.play_game())
+for elf_pow in range(25, 400):
+    print('Trying:', elf_pow)
+    puzzle = Puzzle(cavern, elf_pow)
+    answer = puzzle.play_game()
+    print('Elves left:', len(puzzle.elves()))
+    if len(puzzle.elves()) == 10:
+        print('ANSWER', answer)
+        exit()
