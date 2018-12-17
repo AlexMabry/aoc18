@@ -32,10 +32,6 @@ def connected_water(drop, connected):
     return connected
 
 
-def already_falling(drop):
-    return [drip for drip in connected_water(drop, set()) if drip in falling]
-
-
 def remove_falling():
     global falling, new_water
     falling |= set([d for d in new_water if Point(d.x, d.y - 1) in new_water or Point(d.x, d.y + 1) in new_water])
@@ -56,7 +52,7 @@ while new_water:
     if below.y > max_y:
         remove_falling()
     else:
-        if below in all_water and already_falling(below):
+        if below in all_water and [drip for drip in connected_water(below, set()) if drip in falling]:
             remove_falling()
         elif below not in clay and below not in all_water:
             all_water.add(below)
